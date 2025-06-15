@@ -1,8 +1,8 @@
-name: Run Selenium Google Search on Windows
+name: Daily Selenium Google Search on Windows
 
 on:
-  push:
-    branches: [ main ]
+  schedule:
+    - cron: '45 1 * * *'  # 7:15 AM IST daily
   workflow_dispatch:
 
 jobs:
@@ -10,7 +10,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout Code
+    - name: Checkout code
       uses: actions/checkout@v3
 
     - name: Set up Python
@@ -23,14 +23,20 @@ jobs:
         python -m pip install --upgrade pip
         pip install selenium
 
-    - name: Download Chrome
+    - name: Install Chrome & ChromeDriver
       run: |
         choco install googlechrome -y
         choco install chromedriver -y --ignore-checksums
 
     - name: Add Chrome to PATH
+      shell: powershell
       run: |
-        echo "C:\Program Files\Google\Chrome\Application" >> $env:GITHUB_PATH
+        echo "C:\Program Files\Google\Chrome\Application" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-    - name: Run script
+    - name: Verify Chrome and Chromedriver
+      run: |
+        chrome --version
+        chromedriver --version
+
+    - name: Run Selenium script
       run: python google_search.py
